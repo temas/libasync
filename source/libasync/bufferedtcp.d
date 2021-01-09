@@ -240,15 +240,18 @@ final class BufferedTCPConnection(size_t size = 4092)
         if (onReadCbs.empty)
             return;
 
-        foreach (ref info; onReadCbs) with (info)
-            if (readBuffer.length >= len)
+        int pos = 0;
+        while (onReadCbs.length > 0 && pos < onReadCbs.length) {
+            OnReadInfo info = onReadCbs[pos];
+            if (readBuffer.length >= info.len)
             {
-                cb(this, readBuffer[0..len].array);
-                readBuffer.popFrontN(len);
+                info.cb(this, readBuffer[0..info.len].array);
+                readBuffer.popFrontN(info.len);
                 onReadCbs.popFront();
+            } else {
+                pos++;
             }
-            else
-                break;
+        }
     }
 
     ///
